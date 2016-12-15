@@ -65,7 +65,7 @@ public class clssMail {
             autenticacion = prt.getProperty("AUTENTICACION", "true");
             clave = prt.getProperty("CLAVE");
             
-            /******CONEXION DE DB SQL*****/
+            /******PARAMETROS DE CONEXION DE DB SQL*****/
             CLAVEDB = prt.getProperty("CLAVEDB");
             SERVER = prt.getProperty("SERVER");
             DBSERVER = prt.getProperty("DBSQLSERVER");
@@ -77,10 +77,25 @@ public class clssMail {
             e.printStackTrace();
         }
     }
-    
+    /**
+     * Función de retornar valor de direccion del servidor
+     * @return 
+     */
     public static String getSERVER()  {return SERVER;}
+    /**
+     * Función de retornar valor de nombre de la base de datos
+     * @return 
+     */
     public static String getDBSERVER(){return DBSERVER;}
+    /**
+     * Función de retornar valor de usuario
+     * @return 
+     */
     public static String getUSUARIO() {return USER;}
+    /**
+     * Función de retornar valor de la clave
+     * @return 
+     */
     public static String getCLAVEDB() {return CLAVEDB;}
     
     public void setParametros() {

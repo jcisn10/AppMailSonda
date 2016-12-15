@@ -7,13 +7,14 @@
  * and open the template in the editor.
  */
 package opt;
+
 /**
- * Objetivo:
- * La funcionalidad de esta aplicación es la de enviar correos, haciendo la función de enviar reportes y 
- * enviar alertas de advertencias a los integrantes de la lista de grupo.
- * 
- * @author jorge.cisneros
- * email: jorge.cisneros@sonda.com / jcisneros.cisneros250@gmail.com
+ * Objetivo: La funcionalidad de esta aplicación es la de enviar correos,
+ * haciendo la función de enviar reportes y enviar alertas de advertencias a los
+ * integrantes de la lista de grupo.
+ *
+ * @author jorge.cisneros email: jorge.cisneros@sonda.com /
+ * jcisneros.cisneros250@gmail.com
  */
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,13 +45,14 @@ public class clssMail {
     String asunto = "", mensaje = "", msgtext = "", para = "", cco = "", bcc = "";
     Properties prt = new Properties();
     java.util.Date fechaini = null, fechafin = null;
-    static String SQL = "", SERVER = "",DBSERVER="",CLAVEDB="",USER="";
+    static String SQL = "", SERVER = "", DBSERVER = "", CLAVEDB = "", USER = "";
     String SUCURSALES = "";
     SimpleDateFormat parseFecha = new SimpleDateFormat("yyyy-MM-dd");
     Locale locale = new Locale("es", "PA");
     String patronNumerico = "###,###,##0.00";
     DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
-    int alerta1=0,alerta2=0,alerta3=0;
+    int alerta1 = 0, alerta2 = 0, alerta3 = 0;
+
     //TODO: Mejorar envio de mensajes con adjuntos
     public clssMail() {
         decimalFormat.applyPattern(patronNumerico);
@@ -64,40 +66,58 @@ public class clssMail {
             usuario = prt.getProperty("USUARIO");
             autenticacion = prt.getProperty("AUTENTICACION", "true");
             clave = prt.getProperty("CLAVE");
-            
-            /******PARAMETROS DE CONEXION DE DB SQL*****/
+
+            /**
+             * ****PARAMETROS DE CONEXION DE DB SQL****
+             */
             CLAVEDB = prt.getProperty("CLAVEDB");
             SERVER = prt.getProperty("SERVER");
             DBSERVER = prt.getProperty("DBSQLSERVER");
             USER = prt.getProperty("USER");
-            alerta1=Integer.parseInt(prt.getProperty("ALERTA1"));
-            alerta2=Integer.parseInt(prt.getProperty("ALERTA2"));
-            alerta3=Integer.parseInt(prt.getProperty("ALERTA3"));
+            alerta1 = Integer.parseInt(prt.getProperty("ALERTA1"));
+            alerta2 = Integer.parseInt(prt.getProperty("ALERTA2"));
+            alerta3 = Integer.parseInt(prt.getProperty("ALERTA3"));
         } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
         }
     }
+
     /**
      * Función de retornar valor de direccion del servidor
-     * @return 
+     *
+     * @return
      */
-    public static String getSERVER()  {return SERVER;}
+    public static String getSERVER() {
+        return SERVER;
+    }
+
     /**
      * Función de retornar valor de nombre de la base de datos
-     * @return 
+     *
+     * @return
      */
-    public static String getDBSERVER(){return DBSERVER;}
+    public static String getDBSERVER() {
+        return DBSERVER;
+    }
+
     /**
      * Función de retornar valor de usuario
-     * @return 
+     *
+     * @return
      */
-    public static String getUSUARIO() {return USER;}
+    public static String getUSUARIO() {
+        return USER;
+    }
+
     /**
      * Función de retornar valor de la clave
-     * @return 
+     *
+     * @return
      */
-    public static String getCLAVEDB() {return CLAVEDB;}
-    
+    public static String getCLAVEDB() {
+        return CLAVEDB;
+    }
+
     /**
      * Función que establece los parametros
      */
@@ -109,10 +129,12 @@ public class clssMail {
         prt.setProperty("mail.smtp.user", usuario);
         prt.setProperty("mail.smtp.auth", autenticacion);
     }
+
     /**
      * Función para setear las fechas de inicio y fin
+     *
      * @param inicio
-     * @param fin 
+     * @param fin
      */
     public void SetFechas(Date inicio, Date fin) {
         this.fechaini = inicio;
@@ -121,9 +143,10 @@ public class clssMail {
 
     /**
      * Función que obtiene estatus de url (ping)
+     *
      * @param url
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static boolean getStatus(String url) throws IOException {
         boolean result = false;
@@ -169,15 +192,17 @@ public class clssMail {
         this.mensaje = "Mensaje de Prueba"; //prt.getProperty("MENSAJE");
         //this.adjuntos = shares.split(";");
     }
-    
-    public void setAsuntoMsg(String a,String b){
+
+    public void setAsuntoMsg(String a, String b) {
         this.asunto = a;
         this.mensaje = b;
     }
 
     /**
-     * Función que envía el correo con los valores indicados para el envío de los avisos y reportes.
-     * @return 
+     * Función que envía el correo con los valores indicados para el envío de
+     * los avisos y reportes.
+     *
+     * @return
      */
     public boolean SendMail() {
         boolean status = false;
@@ -205,7 +230,7 @@ public class clssMail {
 
             String fichero = "";
 //            String linea;
-            
+
             // Una MultiParte para agrupar texto e imagen.
             MimeMultipart multiParte = new MimeMultipart();
 
@@ -223,13 +248,11 @@ public class clssMail {
 
             java.util.Date FECHAINI = calendar.getTime();
             java.util.Date FECHAFIN = cal2.getTime();
-            
-            javax.activation.DataSource datasrc = null;
 
-            BodyPart firma = new MimeBodyPart();
-            firma.setContent(fichero, "text/html");
-            multiParte.addBodyPart(firma);
-
+            //javax.activation.DataSource datasrc = null;
+            //BodyPart firma = new MimeBodyPart();
+            //firma.setContent(fichero, "text/html");
+            //multiParte.addBodyPart(firma);
             // Se compone el correo, dando to, from, subject y el
             // contenido.
             MimeMessage message = new MimeMessage(session);
@@ -279,44 +302,46 @@ public class clssMail {
     public static void main(String[] args) {
         clssMssql connServer = new clssMssql();
         @SuppressWarnings("UnusedAssignment")
-        String url = "";
+        String url = "", Asunto = "", Msg = "";
         String tablaMonitor = "";
         String tablaTasStackerFull = "";
         int horamail = new java.util.Date().getHours();
-        String saludoIni = (horamail < 13) ? "Buenos días, " : (horamail >= 13 && horamail < 18 ) ? "Buenas tardes, " : "Buenas noches, ";
-        
+        String saludoIni = (horamail < 13) ? "Buenos días, " : (horamail >= 13 && horamail < 18) ? "Buenas tardes, " : "Buenas noches, ";
+
         clssMail mail = new clssMail();
-        url = "jdbc:sqlserver://" 
-                + clssMail.getSERVER()+":1433;databaseName=" 
-                + clssMail.getDBSERVER()+";integratedSecurity=false;";
-        
-        connServer.dbConnect(url,"com.microsoft.sqlserver.jdbc.SQLServerDriver"
-                , clssMail.getUSUARIO()
-                , clssMail.getCLAVEDB());
-        
+        url = "jdbc:sqlserver://"
+                + clssMail.getSERVER() + ":1433;databaseName="
+                + clssMail.getDBSERVER() + ";integratedSecurity=false;";
+
+        connServer.dbConnect(url, "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+                clssMail.getUSUARIO(),
+                clssMail.getCLAVEDB());
+
         tablaMonitor = connServer.qryMonitorTaSondaMail();
         tablaTasStackerFull = connServer.qryMonitorTaSonda();
+
+        Asunto = "Mensaje de Advertencia en Tas " + connServer.getPosId();
+        Msg += saludoIni;
+        Msg += " Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. " + "<hr>";
+
+        if (connServer.getCantStacker() > mail.alerta2) {
+            Msg += "<br/>" + tablaTasStackerFull + "<br/>";            
+        }
         
-        //System.out.println(tablaMonitor);
+        mail.setInformacionMail();
+        Msg += "<br/>" + tablaMonitor + "<br/>";
         
-        if(connServer.getCantStacker() > mail.alerta2){
-            mail.setInformacionMail();
-            mail.setAsuntoMsg("Mensaje de Advertencia en Tas "+connServer.getPosId()
-                    ,saludoIni + " Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. " + "<hr>"
-                    + "<br/>" + tablaTasStackerFull + "<br/>" 
-                    + "<br/>" + tablaMonitor + "<br/>" + "<hr>");
-            if (args.length > 0) {
-                String asunto = args[0];
-                String mensaje = args[1];
-                mail.setAsuntoMsg(asunto,mensaje);
-            }
-            //mail.generarreporte();
-            mail.setParametros();
-            if (mail.SendMail()) {
-                System.out.println("Correo enviado, exitosamente");
-            } else {
-                System.out.println("No se pudo enviar el correo");
-            }
+        if (args.length > 0) {
+            String asunto = args[0];
+            String mensaje = args[1];
+            mail.setAsuntoMsg(asunto, mensaje);
+        }
+        mail.setAsuntoMsg(Asunto, Msg + "<hr>");
+        mail.setParametros();
+        if (mail.SendMail()) {
+            System.out.println("Correo enviado, exitosamente");
+        } else {
+            System.out.println("No se pudo enviar el correo");
         }
     }
 }

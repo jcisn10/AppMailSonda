@@ -118,14 +118,14 @@ public class clssMssql {
     }
 
     public int getCantStacker() {
-        return 5;//this.stacker;
+        return this.stacker;
     }
 
     public String getPosId() {
         return this.posid;
     }
-    
-    public String muestraData(ResultSet r){
+
+    public String muestraData(ResultSet r) {
         try {
             return muestraData(r, null);
         } catch (Exception ex) {
@@ -136,26 +136,30 @@ public class clssMssql {
 
     @SuppressWarnings({"UnusedAssignment", "null"})
     public String muestraData(ResultSet r, String tituloHtml) throws Exception {
-        String txtSalida = "";
+        String txtSalida = "", colorTd = "";
         ResultSetMetaData rmeta = r.getMetaData();
+        int cont = 0;
         int numColumnas = rmeta.getColumnCount();
         txtSalida = "<br/>";
         txtSalida = "<center>";
-        txtSalida += "<table border=1>";
+//        txtSalida += "<table border=1 style=\"font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"\">";
+        txtSalida += "<table border=1 style=\"font-family: arial,Verdana; \">";
 
-        if(tituloHtml!=null || !tituloHtml.isEmpty())
-        txtSalida += "<tr><td colspan=" + numColumnas + ">" + tituloHtml + "</td></tr>";
-        
+        if (tituloHtml != null || !tituloHtml.isEmpty()) {
+            txtSalida += "<tr><td colspan=" + numColumnas + " style=\"text-align: center;\">" + tituloHtml + "</td></tr>";
+        }
+
         txtSalida += "<thead><tr>";
         for (int i = 1; i <= numColumnas; ++i) {
-            txtSalida += "<th>" + rmeta.getColumnName(i) + "</th>";
+            txtSalida += "<th style=\"padding:3px 5px\">" + rmeta.getColumnName(i) + "</th>";
         }
         txtSalida += "</tr></thead>";
 
         while (r.next()) {
             txtSalida += "<tr>";
+            colorTd = (cont % 2 == 0) ? "#e1e1e1" : "#FFFFFF";
             for (int i = 1; i <= numColumnas; ++i) {
-                txtSalida += "<td>" + r.getString(i) + "</td>";
+                txtSalida += "<td style=\"border-bottom:1px solid #ccc;border-right:1px solid #ccc;padding:3px 5px;text-align:center;background-color:" + colorTd + "\">" + r.getString(i) + "</td>";
             }
             txtSalida += "</tr>";
         }
@@ -212,7 +216,7 @@ public class clssMssql {
             if (crearStatement()) {
                 if (this.execSQL(qry)) {
                     try {
-                        txtmsg = this.muestraData(this.rs,"ALERTA DE TAS SONDA");
+                        txtmsg = this.muestraData(this.rs, "REPORTE DE MONITOR TAS SONDA");
                     } catch (Exception ex) {
                         Logger.getLogger(clssMssql.class.getName()).log(Level.SEVERE, null, ex);
                     } finally {
@@ -242,7 +246,7 @@ public class clssMssql {
             if (crearStatement()) {
                 if (this.execSQL(queryString)) {
                     try {
-                        txtmsg = this.muestraData(this.rs,"REPORTE DE MONITOR TAS SONDA");
+                        txtmsg = this.muestraData(this.rs, "ALERTA DE TAS SONDA");
                     } catch (Exception ex) {
                         Logger.getLogger(clssMssql.class.getName()).log(Level.SEVERE, null, ex);
                     } finally {

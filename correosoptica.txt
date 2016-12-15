@@ -1,0 +1,4 @@
+/proyecto/rptVentas.jrxml;/proyecto/rptVentasDesglose.jrxml
+jorge@opticalopez.net
+Asunto del Correo
+Mensaje de Prueba en la Optica

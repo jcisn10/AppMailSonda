@@ -155,7 +155,7 @@ public class clssMssql
        String txtmsg="",qry = "SELECT  " +
             "a.terminal TERMINAL" +
             ",CONVERT(INT, CONVERT(VARBINARY, d.posid, 2)) POSID" +
-            ",dbo.fn_getcharimpares(O.amid) AMID " +
+            ",d.amid AMID " +
             ",g.referencia UBICACION " +
             ",cast(cast((cast(coalesce(O.cantbilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) as varchar) + '% Stacker - OK' STACKER " +
             "From tasSonda.terminales d " +

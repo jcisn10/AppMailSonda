@@ -98,6 +98,9 @@ public class clssMail {
      */
     public static String getCLAVEDB() {return CLAVEDB;}
     
+    /**
+     * Función que establece los parametros
+     */
     public void setParametros() {
         prt.put("mail.smtp.host", smtp);
         prt.setProperty("mail.smtp.ssl.trust", smtp);
@@ -106,12 +109,22 @@ public class clssMail {
         prt.setProperty("mail.smtp.user", usuario);
         prt.setProperty("mail.smtp.auth", autenticacion);
     }
-
+    /**
+     * Función para setear las fechas de inicio y fin
+     * @param inicio
+     * @param fin 
+     */
     public void SetFechas(Date inicio, Date fin) {
         this.fechaini = inicio;
         this.fechafin = fin;
     }
 
+    /**
+     * Función que obtiene estatus de url (ping)
+     * @param url
+     * @return
+     * @throws IOException 
+     */
     public static boolean getStatus(String url) throws IOException {
         boolean result = false;
         try {
@@ -143,6 +156,9 @@ public class clssMail {
         return sw;
     }
 
+    /**
+     * Función que setea los valores para el envío de correos.
+     */
     public void setInformacionMail() {
         shares = prt.getProperty("ADJUNTOS");
         this.para = prt.getProperty("PARA");
@@ -159,6 +175,10 @@ public class clssMail {
         this.mensaje = b;
     }
 
+    /**
+     * Función que envía el correo con los valores indicados para el envío de los avisos y reportes.
+     * @return 
+     */
     public boolean SendMail() {
         boolean status = false;
         try {

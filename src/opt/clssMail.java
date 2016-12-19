@@ -51,7 +51,7 @@ public class clssMail {
     Locale locale = new Locale("es", "PA");
     String patronNumerico = "###,###,##0.00";
     DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
-    int alerta1 = 0, alerta2 = 0, alerta3 = 0;
+    int alerta1 = 0, alerta2 = 0, alerta3 = 0, operacion = 0;
 
     //TODO: Mejorar envio de mensajes con adjuntos
     public clssMail() {
@@ -66,7 +66,7 @@ public class clssMail {
             usuario = prt.getProperty("USUARIO");
             autenticacion = prt.getProperty("AUTENTICACION", "true");
             clave = prt.getProperty("CLAVE");
-
+            operacion = Integer.parseInt(prt.getProperty("ACCION"));
             /**
              * ****PARAMETROS DE CONEXION DE DB SQL****
              */
@@ -324,18 +324,22 @@ public class clssMail {
         Msg += saludoIni;
         Msg += " Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. " + "<hr>";
 
-        if (connServer.getCantStacker() > mail.alerta2) {
-            Msg += "<br/>" + tablaTasStackerFull + "<br/>";            
+        if(mail.operacion == 1){
+            Msg += "<br/>" + tablaTasStackerFull + "<br/>";
+        } else if(mail.operacion == 2){
+            Msg += "<br/>" + tablaMonitor + "<br/>";
         }
         
         mail.setInformacionMail();
-        Msg += "<br/>" + tablaMonitor + "<br/>";
+//        if (connServer.getCantStacker() > mail.alerta2) {
+//        }        
         
         if (args.length > 0) {
             String asunto = args[0];
             String mensaje = args[1];
             mail.setAsuntoMsg(asunto, mensaje);
         }
+        
         mail.setAsuntoMsg(Asunto, Msg + "<hr>");
         mail.setParametros();
         if (mail.SendMail()) {

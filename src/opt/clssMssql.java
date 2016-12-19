@@ -16,12 +16,15 @@ package opt;
  * @author jorge.cisneros email: jorge.cisneros@sonda.com /
  * jcisneros.cisneros250@gmail.com
  */
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +40,10 @@ public class clssMssql {
     String db_driver = "";
     String db_userid = "";
     String db_password = "";
-
+    Properties prt = new Properties();
+    int alerta1 = 0;
+    int alerta2 = 0;
+    int alerta3 = 0;
     /**
      * Función que inicializa las variables de conexión.
      *
@@ -53,6 +59,19 @@ public class clssMssql {
         this.db_driver = db_driver;
         this.db_userid = db_userid;
         this.db_password = db_password;
+    }
+    
+    public void setVariables(){
+        FileInputStream finpt = null;
+        try {
+            finpt = new java.io.FileInputStream("configmail.properties");
+            prt.load(finpt);
+            alerta1 = Integer.parseInt(prt.getProperty("ALERTA1"));
+            alerta2 = Integer.parseInt(prt.getProperty("ALERTA2"));
+            alerta3 = Integer.parseInt(prt.getProperty("ALERTA3"));
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -169,7 +188,7 @@ public class clssMssql {
     }
 
     public String qryMonitorTaSondaMail() {
-        String txtmsg = "", qry = "SELECT  "
+        String txtmsg = "", qry = "SELECT "
                 + "a.terminal TERMINAL"
                 + ",CONVERT(INT, CONVERT(VARBINARY, d.posid, 2)) POSID"
                 + ",dbo.fn_getcharimpares(d.amid) AMID "
@@ -211,7 +230,8 @@ public class clssMssql {
                 + "	ON (a.terminal=O.terminal) "
                 + "	 LEFT JOIN tasSonda.agencias g ON d.operadorId=g.operadorId "
                 + "where cast(stamp as date)=cast(getdate() as date) "
-                + "and stamp=(select max(stamp) from tasSonda.logStatus)";
+                + "and stamp=(select max(stamp) from tasSonda.logStatus) "
+                + "and cast((cast(coalesce(O.cantbilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) > " + this.alerta2;
         if (isConnect()) {
             if (crearStatement()) {
                 if (this.execSQL(qry)) {

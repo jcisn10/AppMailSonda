@@ -176,6 +176,9 @@ public class clssMssql {
         ResultSetMetaData rmeta = r.getMetaData();
         int cont = 0;
         int numColumnas = rmeta.getColumnCount();
+        if(r.getRow()==0){
+            return null;
+        }
         txtSalida = "<br/>";
         txtSalida = "<center>";
 //        txtSalida += "<table border=1 style=\"font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"\">";
@@ -190,7 +193,7 @@ public class clssMssql {
             txtSalida += "<th style=\"padding:3px 5px\">" + rmeta.getColumnName(i) + "</th>";
         }
         txtSalida += "</tr></thead>";
-
+        
         while (r.next()) {
             txtSalida += "<tr>";
             colorTd = (cont % 2 == 0) ? "#e1e1e1" : "#FFFFFF";
@@ -247,13 +250,40 @@ public class clssMssql {
                 + "	ON (a.terminal=O.terminal) "
                 + "	 LEFT JOIN tasSonda.agencias g ON d.operadorId=g.operadorId "
                 + "where cast(stamp as date)=cast(getdate() as date) "
-                + "and stamp=(select max(stamp) from tasSonda.logStatus) "
-                + "and cast((cast(coalesce(O.cantbilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) > " + this.alerta2;
+                + "and stamp=(select max(stamp) from tasSonda.logStatus) ";
+        //+ "and cast((cast(coalesce(O.cantbilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) > " + this.alerta2;
         if (isConnect()) {
             if (crearStatement()) {
                 if (this.execSQL(qry)) {
                     try {
                         txtmsg = this.muestraData(this.rs, "REPORTE DE MONITOR TAS SONDA");
+                    } catch (Exception ex) {
+                        Logger.getLogger(clssMssql.class.getName()).log(Level.SEVERE, null, ex);
+                    } finally {
+                        this.cerrarConexion();
+                    }
+                }
+            }
+        }
+        return txtmsg;
+    }
+
+    public String qryAlertaStaker() {
+        String txtmsg = "";
+        String sql = "select "
+                + " r.terminal,r.stamp,r.billetero "
+                + ",DATEDIFF(minute, stamp, getdate()) "
+                + "from tasSonda.logStatus r "
+                + "where cast(stamp as date)=cast(getdate() as date) "
+                + "and DATEDIFF(minute, stamp, getdate()) <= 1 "
+                + "and billetero in (100098,100099) "
+                + "and stamp = (select max(stamp) from tasSonda.logStatus where terminal=r.terminal and cast(stamp as date)=cast(r.stamp as date) and billetero in (100098,100099)) "
+                + "order by stamp desc";
+        if (isConnect()) {
+            if (crearStatement()) {
+                if (this.execSQL(sql)) {
+                    try {
+                        txtmsg = this.muestraData(this.rs, "STAKER EN REMOCIÓN Y ENCAJE");
                     } catch (Exception ex) {
                         Logger.getLogger(clssMssql.class.getName()).log(Level.SEVERE, null, ex);
                     } finally {
@@ -273,13 +303,13 @@ public class clssMssql {
     public String qryMonitorTaSonda() {
         String txtmsg = "";
         String queryString = "select terminal,posid,stamp,capacidadStaker,cantidadBilletes "
-                + ",prctjealerta "
+                + ",cast(prctjealerta as varchar) + '%' "
                 + "from ("
                 + "	select a.terminal,CONVERT(INT, CONVERT(VARBINARY, c.posid, 2)) posid,a.stamp,a.capacidadStaker"
                 + "	,595 cantidadBilletes "
-                + "  ,cast((cast(coalesce(595,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) prctjealerta "
-                + "  --,a.cantidadBilletes "
-                + "  --,cast((cast(coalesce(a.cantidadBilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) prctjealerta "
+                + "     ,cast((cast(coalesce(595,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) as prctjealerta "
+                //+ "  --,a.cantidadBilletes "
+                //+ "  --,cast((cast(coalesce(a.cantidadBilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) prctjealerta "
                 + "	from "
                 + "	tasSonda.logStatus a "
                 + "	,(select terminal,max(stamp) stamp from tasSonda.logStatus where cast(stamp as date)=cast(getdate() as date) group by terminal) b "
@@ -287,7 +317,8 @@ public class clssMssql {
                 + "	where a.terminal=b.terminal and a.stamp=b.stamp "
                 + "	and a.terminal=c.descripcion "
                 + ") a "
-                + "where cast((cast(coalesce(cantidadBilletes,0) as NUMERIC(18,2)) / capacidadStaker * 100) as NUMERIC(18,0)) > " + this.alerta2;
+                + "where cast((cast(coalesce(cantidadBilletes,0) as NUMERIC(18,2)) / capacidadStaker * 100) as NUMERIC(18,0)) > " + this.alerta2 + " "
+                + "order by prctjealerta desc";
 
         if (isConnect()) {
             if (crearStatement()) {

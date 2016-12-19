@@ -305,6 +305,8 @@ public class clssMail {
         String url = "", Asunto = "", Msg = "";
         String tablaMonitor = "";
         String tablaTasStackerFull = "";
+        String AlertaStaker = "";
+        boolean sw = false;
         int horamail = new java.util.Date().getHours();
         String saludoIni = (horamail < 13) ? "Buenos días, " : (horamail >= 13 && horamail < 18) ? "Buenas tardes, " : "Buenas noches, ";
 
@@ -317,48 +319,56 @@ public class clssMail {
                 clssMail.getUSUARIO(),
                 clssMail.getCLAVEDB());
 
-        tablaMonitor = connServer.qryMonitorTaSondaMail();
-        tablaTasStackerFull = connServer.qryMonitorTaSonda();
+        if ((args != null && args.length > 0 && Integer.parseInt(args[0]) > 0) || mail.operacion > 0) {
 
-        Asunto = "Mensaje de Advertencia en Tas " + connServer.getPosId();
-        Msg += saludoIni;
-        Msg += " Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. " + "<hr>";
+            mail.operacion = (args != null && args.length > 0 && Integer.parseInt(args[0]) > 0) ? Integer.parseInt(args[0]) : mail.operacion;
 
-        if (args.length > 0) {
-            int var = Integer.parseInt(args[0]);
-            if (var == 1) {
-                Msg += "<br/>" + tablaTasStackerFull + "<br/>";
-            } else if (var == 2) {
-                Msg += "<br/>" + tablaMonitor + "<br/>";
-            } else if (var == 3) {
-                Msg += "<br/>" + "---------------->Staker desconocido " + (new java.text.SimpleDateFormat("DD/MM/YYYY").format(new java.util.Date().getDate())) + "<----------------" + "<br/>";
+            Asunto = "Mensaje de Advertencia en Tas " + connServer.getPosId();
+            Msg += saludoIni;
+            Msg += " Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. " + "<hr>";
+
+            switch (mail.operacion) {
+                case 1: {
+                    tablaTasStackerFull = connServer.qryMonitorTaSonda();
+                    sw = (tablaTasStackerFull != null);
+                    if (sw) {
+                        Msg += "<br/>" + tablaTasStackerFull + "<br/>";
+                    }
+                    break;
+                }
+                case 2: {
+                    tablaMonitor = connServer.qryMonitorTaSondaMail();
+                    sw = (tablaMonitor != null);
+                    if (sw) {
+                        Msg += "<br/>" + tablaMonitor + "<br/>";
+                    }
+                    break;
+                }
+                case 3: {
+                    AlertaStaker = connServer.qryAlertaStaker();
+                    sw = (AlertaStaker != null);
+                    Msg += "<br/>" + "---------------->Staker desconocido " + (new java.text.SimpleDateFormat("DD/MM/YYYY").format(new java.util.Date().getTime())) + "<----------------" + "<br/>";
+                    if (sw) {
+                        Msg += AlertaStaker;
+                    }
+                    break;
+                }
+                default:
+                    sw = false;
+                    break;
             }
-        } else {
-            if (mail.operacion == 1) {
-                Msg += "<br/>" + tablaTasStackerFull + "<br/>";
-            } else if (mail.operacion == 2) {
-                Msg += "<br/>" + tablaMonitor + "<br/>";
-            } else if (mail.operacion == 3) {
-                Msg += "<br/>" + "---------------->Staker desconocido " + (new java.text.SimpleDateFormat("DD/MM/YYYY").format(new java.util.Date().getDate())) + "<----------------" + "<br/>";
+
+            if (sw) {
+                mail.setInformacionMail();
+
+                mail.setAsuntoMsg(Asunto, Msg + "<hr>");
+                mail.setParametros();
+                if (mail.SendMail()) {
+                    System.out.println("Correo enviado, exitosamente");
+                } else {
+                    System.out.println("No se pudo enviar el correo");
+                }
             }
-        }
-
-        mail.setInformacionMail();
-//        if (connServer.getCantStacker() > mail.alerta2) {
-//        }        
-
-        if (args.length > 0) {
-            String asunto = args[0];
-            String mensaje = args[1];
-            mail.setAsuntoMsg(asunto, mensaje);
-        }
-
-        mail.setAsuntoMsg(Asunto, Msg + "<hr>");
-        mail.setParametros();
-        if (mail.SendMail()) {
-            System.out.println("Correo enviado, exitosamente");
-        } else {
-            System.out.println("No se pudo enviar el correo");
         }
     }
 }

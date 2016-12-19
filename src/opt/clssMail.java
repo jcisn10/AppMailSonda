@@ -324,22 +324,35 @@ public class clssMail {
         Msg += saludoIni;
         Msg += " Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. " + "<hr>";
 
-        if(mail.operacion == 1){
-            Msg += "<br/>" + tablaTasStackerFull + "<br/>";
-        } else if(mail.operacion == 2){
-            Msg += "<br/>" + tablaMonitor + "<br/>";
+        if (args.length > 0) {
+            int var = Integer.parseInt(args[0]);
+            if (var == 1) {
+                Msg += "<br/>" + tablaTasStackerFull + "<br/>";
+            } else if (var == 2) {
+                Msg += "<br/>" + tablaMonitor + "<br/>";
+            } else if (var == 3) {
+                Msg += "<br/>" + "---------------->Staker desconocido " + (new java.text.SimpleDateFormat("DD/MM/YYYY").format(new java.util.Date().getDate())) + "<----------------" + "<br/>";
+            }
+        } else {
+            if (mail.operacion == 1) {
+                Msg += "<br/>" + tablaTasStackerFull + "<br/>";
+            } else if (mail.operacion == 2) {
+                Msg += "<br/>" + tablaMonitor + "<br/>";
+            } else if (mail.operacion == 3) {
+                Msg += "<br/>" + "---------------->Staker desconocido " + (new java.text.SimpleDateFormat("DD/MM/YYYY").format(new java.util.Date().getDate())) + "<----------------" + "<br/>";
+            }
         }
-        
+
         mail.setInformacionMail();
 //        if (connServer.getCantStacker() > mail.alerta2) {
 //        }        
-        
+
         if (args.length > 0) {
             String asunto = args[0];
             String mensaje = args[1];
             mail.setAsuntoMsg(asunto, mensaje);
         }
-        
+
         mail.setAsuntoMsg(Asunto, Msg + "<hr>");
         mail.setParametros();
         if (mail.SendMail()) {

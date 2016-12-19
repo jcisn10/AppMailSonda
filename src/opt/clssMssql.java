@@ -44,6 +44,7 @@ public class clssMssql {
     int alerta1 = 0;
     int alerta2 = 0;
     int alerta3 = 0;
+
     /**
      * Función que inicializa las variables de conexión.
      *
@@ -60,8 +61,11 @@ public class clssMssql {
         this.db_userid = db_userid;
         this.db_password = db_password;
     }
-    
-    public void setVariables(){
+
+    /**
+     * Función establecer variables
+     */
+    public void setVariables() {
         FileInputStream finpt = null;
         try {
             finpt = new java.io.FileInputStream("configmail.properties");
@@ -90,6 +94,7 @@ public class clssMssql {
     }
 
     /**
+     * Función se crea statement para iniciar la lectura y escritura
      *
      * @return
      */
@@ -103,6 +108,12 @@ public class clssMssql {
         }
     }
 
+    /**
+     * Función ejecuta la consulta query
+     *
+     * @param SQL
+     * @return
+     */
     public boolean execSQL(String SQL) {
         try {
             rs = stmt.executeQuery(SQL);
@@ -113,6 +124,9 @@ public class clssMssql {
         }
     }
 
+    /**
+     * Función de cerrar los objetos de conexión.
+     */
     public void cerrarConexion() {
         try {
             if (!conn.isClosed() || !stmt.isClosed() || !rs.isClosed()) {
@@ -126,6 +140,9 @@ public class clssMssql {
         }
     }
 
+    /**
+     * Función de cerrar los objetos de conexión.
+     */
     public void cerrar() {
         try {
             rs.close();
@@ -255,12 +272,22 @@ public class clssMssql {
      */
     public String qryMonitorTaSonda() {
         String txtmsg = "";
-        String queryString = "select a.terminal,CONVERT(INT, CONVERT(VARBINARY, c.posid, 2)) posid,a.stamp,a.capacidadStaker,a.cantidadBilletes from "
-                + "tasSonda.logStatus a "
-                + ",(select terminal,max(stamp) stamp from tasSonda.logStatus where cast(stamp as date)=cast(getdate() as date) group by terminal) b "
-                + ",tasSonda.terminales c "
-                + "where a.terminal=b.terminal and a.stamp=b.stamp "
-                + "and a.terminal=c.descripcion";
+        String queryString = "select terminal,posid,stamp,capacidadStaker,cantidadBilletes "
+                + ",prctjealerta "
+                + "from ("
+                + "	select a.terminal,CONVERT(INT, CONVERT(VARBINARY, c.posid, 2)) posid,a.stamp,a.capacidadStaker"
+                + "	,595 cantidadBilletes "
+                + "  ,cast((cast(coalesce(595,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) prctjealerta "
+                + "  --,a.cantidadBilletes "
+                + "  --,cast((cast(coalesce(a.cantidadBilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) prctjealerta "
+                + "	from "
+                + "	tasSonda.logStatus a "
+                + "	,(select terminal,max(stamp) stamp from tasSonda.logStatus where cast(stamp as date)=cast(getdate() as date) group by terminal) b "
+                + "	,tasSonda.terminales c "
+                + "	where a.terminal=b.terminal and a.stamp=b.stamp "
+                + "	and a.terminal=c.descripcion "
+                + ") a "
+                + "where cast((cast(coalesce(cantidadBilletes,0) as NUMERIC(18,2)) / capacidadStaker * 100) as NUMERIC(18,0)) > " + this.alerta2;
 
         if (isConnect()) {
             if (crearStatement()) {

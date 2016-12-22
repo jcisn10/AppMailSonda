@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -176,9 +178,12 @@ public class clssMssql {
         ResultSetMetaData rmeta = r.getMetaData();
         int cont = 0;
         int numColumnas = rmeta.getColumnCount();
-        if(r.getRow()==0){
+
+        if (!r.isBeforeFirst()) {
+            System.out.println("No data");
             return null;
         }
+
         txtSalida = "<br/>";
         txtSalida = "<center>";
 //        txtSalida += "<table border=1 style=\"font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"\">";
@@ -193,7 +198,7 @@ public class clssMssql {
             txtSalida += "<th style=\"padding:3px 5px\">" + rmeta.getColumnName(i) + "</th>";
         }
         txtSalida += "</tr></thead>";
-        
+
         while (r.next()) {
             txtSalida += "<tr>";
             colorTd = (cont % 2 == 0) ? "#e1e1e1" : "#FFFFFF";
@@ -268,16 +273,16 @@ public class clssMssql {
         return txtmsg;
     }
 
-    public String qryAlertaStaker() {
+    /*public String qryAlertaStaker() {
         String txtmsg = "";
         String sql = "select "
                 + " r.terminal,r.stamp,r.billetero "
                 + ",DATEDIFF(minute, stamp, getdate()) "
                 + "from tasSonda.logStatus r "
                 + "where cast(stamp as date)=cast(getdate() as date) "
-                + "and DATEDIFF(minute, stamp, getdate()) <= 1 "
+                //+ "and DATEDIFF(minute, stamp, getdate()) <= 1 "
                 + "and billetero in (100098,100099) "
-                + "and stamp = (select max(stamp) from tasSonda.logStatus where terminal=r.terminal and cast(stamp as date)=cast(r.stamp as date) and billetero in (100098,100099)) "
+                + "and stamp = (select max(stamp) from tasSonda.logStatus where terminal=r.terminal and cast(stamp as date)=cast(r.stamp as date)) "
                 + "order by stamp desc";
         if (isConnect()) {
             if (crearStatement()) {
@@ -293,7 +298,7 @@ public class clssMssql {
             }
         }
         return txtmsg;
-    }
+    }*/
 
     /**
      * Función que genera el reporte de Monitor Tas Sonda enviado a Tesorería
@@ -306,10 +311,10 @@ public class clssMssql {
                 + ",cast(prctjealerta as varchar) + '%' "
                 + "from ("
                 + "	select a.terminal,CONVERT(INT, CONVERT(VARBINARY, c.posid, 2)) posid,a.stamp,a.capacidadStaker"
-                + "	,595 cantidadBilletes "
-                + "     ,cast((cast(coalesce(595,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) as prctjealerta "
-                //+ "  --,a.cantidadBilletes "
-                //+ "  --,cast((cast(coalesce(a.cantidadBilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) prctjealerta "
+                //+ "	,595 cantidadBilletes "
+                //+ "     ,cast((cast(coalesce(595,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) as prctjealerta "
+                + "  ,a.cantidadBilletes "
+                + "  ,cast((cast(coalesce(a.cantidadBilletes,0) as NUMERIC(18,2)) / a.capacidadStaker * 100) as NUMERIC(18,0)) prctjealerta "
                 + "	from "
                 + "	tasSonda.logStatus a "
                 + "	,(select terminal,max(stamp) stamp from tasSonda.logStatus where cast(stamp as date)=cast(getdate() as date) group by terminal) b "

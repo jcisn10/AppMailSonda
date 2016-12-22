@@ -296,10 +296,19 @@ public class clssMail {
         return status;
     }
 
+    public void esperarXsegundos(int segundos) {
+        try {
+            Thread.sleep(segundos * 1000);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     /**
      * @param args se ignoran
      */
     public static void main(String[] args) {
+
         clssMssql connServer = new clssMssql();
         @SuppressWarnings("UnusedAssignment")
         String url = "", Asunto = "", Msg = "";
@@ -307,7 +316,8 @@ public class clssMail {
         String tablaTasStackerFull = "";
         String AlertaStaker = "";
         boolean sw = false;
-        int horamail = new java.util.Date().getHours();
+        int operacion = 0, horamail = new java.util.Date().getHours();
+        int hora_ini = 4, hora_fin = 22, tiempo_out = 0, count = 0;
         String saludoIni = (horamail < 13) ? "Buenos días, " : (horamail >= 13 && horamail < 18) ? "Buenas tardes, " : "Buenas noches, ";
 
         clssMail mail = new clssMail();
@@ -319,56 +329,72 @@ public class clssMail {
                 clssMail.getUSUARIO(),
                 clssMail.getCLAVEDB());
 
-        if ((args != null && args.length > 0 && Integer.parseInt(args[0]) > 0) || mail.operacion > 0) {
+        if (args != null && args.length > 0 && Integer.parseInt(args[0]) > 0) {
 
-            mail.operacion = (args != null && args.length > 0 && Integer.parseInt(args[0]) > 0) ? Integer.parseInt(args[0]) : mail.operacion;
+            operacion = Integer.parseInt(args[0]);
+            tiempo_out = (operacion == 1) ? 300 : (operacion == 2) ? 180 : 5;
+            System.out.println("Operación: " + operacion);
+            System.out.println("Tiempo: " + tiempo_out);
 
-            Asunto = "Mensaje de Advertencia en Tas " + connServer.getPosId();
-            Msg += saludoIni;
-            Msg += " Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. " + "<hr>";
+            //do {
+                horamail = new java.util.Date().getHours();
+                //mail.esperarXsegundos(tiempo_out);
 
-            switch (mail.operacion) {
-                case 1: {
-                    tablaTasStackerFull = connServer.qryMonitorTaSonda();
-                    sw = (tablaTasStackerFull != null);
-                    if (sw) {
-                        Msg += "<br/>" + tablaTasStackerFull + "<br/>";
+                
+                Msg += saludoIni;
+                Msg += "<br/>";
+                
+                switch (operacion) {
+                    case 1: {
+                        //Alerta de Staker lleno.
+                        tablaTasStackerFull = connServer.qryMonitorTaSonda();
+                        sw = (tablaTasStackerFull != null);
+                        if (sw) {
+                            Asunto = "Mensaje de Advertencia en Tas " + connServer.getPosId();
+                            Msg += "<b>Favor retirar el Stacker que contiene arriba de " + mail.alerta2 + " cantidad de billetes. </b>" + "<hr>";
+                            Msg += "<br/>" + tablaTasStackerFull + "<br/>";
+                        }
+                        break;
                     }
-                    break;
-                }
-                case 2: {
-                    tablaMonitor = connServer.qryMonitorTaSondaMail();
-                    sw = (tablaMonitor != null);
-                    if (sw) {
-                        Msg += "<br/>" + tablaMonitor + "<br/>";
+                    case 2: {
+                        //Reporte Monitor Tas cada 3 horas
+                        tablaMonitor = connServer.qryMonitorTaSondaMail();
+                        sw = (tablaMonitor != null);
+                        if (sw) {
+                            Asunto = "Monitor TAS Sonda";
+                            Msg += "<br/>" + tablaMonitor + "<br/>";
+                        }
+                        break;
                     }
-                    break;
+                    /*case 3: {
+                        //Alerta de Staker abierto y cerrado.
+                        AlertaStaker = connServer.qryAlertaStaker();
+                        sw = (AlertaStaker != null);
+                        Msg += "<br/>" + "---------------->Staker desconocido " + (new java.text.SimpleDateFormat("DD/MM/YYYY").format(new java.util.Date().getTime())) + "<----------------" + "<br/>";
+                        if (sw) {
+                            Msg += AlertaStaker;
+                        }
+                        break;
+                    }*/
+                    default:
+                        sw = false;
+                        break;
                 }
-                case 3: {
-                    AlertaStaker = connServer.qryAlertaStaker();
-                    sw = (AlertaStaker != null);
-                    Msg += "<br/>" + "---------------->Staker desconocido " + (new java.text.SimpleDateFormat("DD/MM/YYYY").format(new java.util.Date().getTime())) + "<----------------" + "<br/>";
-                    if (sw) {
-                        Msg += AlertaStaker;
+
+                if (sw) {
+                    mail.setInformacionMail();
+
+                    mail.setAsuntoMsg(Asunto, Msg + "<hr>");
+                    mail.setParametros();
+                    if (mail.SendMail()) {
+                        System.out.println("Correo enviado, exitosamente");
+                        Msg = "";
+                    } else {
+                        System.out.println("No se pudo enviar el correo");
                     }
-                    break;
                 }
-                default:
-                    sw = false;
-                    break;
-            }
-
-            if (sw) {
-                mail.setInformacionMail();
-
-                mail.setAsuntoMsg(Asunto, Msg + "<hr>");
-                mail.setParametros();
-                if (mail.SendMail()) {
-                    System.out.println("Correo enviado, exitosamente");
-                } else {
-                    System.out.println("No se pudo enviar el correo");
-                }
-            }
+                //count++;
+            //} while ((hora_ini <= horamail && hora_fin >= horamail) && count < 5);
         }
     }
 }
